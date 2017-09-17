@@ -1,0 +1,4 @@
+build/*
+bin/*
+cert.pem
+key.pem
