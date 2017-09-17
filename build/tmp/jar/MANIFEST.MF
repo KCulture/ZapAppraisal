@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: com.github.KCulture.ZapAppraisal.ZapAppraisal
-Implementation-Title: ZapAppraisal
-Implementation-Version: 0.0.1
-
