@@ -1,0 +1,115 @@
+buildscript {
+    repositories {
+        maven {
+           url "https://plugins.gradle.org/m2/"
+        }
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+    classpath "gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.2"
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:$spring_version")
+    }
+}
+
+plugins {
+  id "com.google.protobuf" version "0.8.2"
+  id "java"
+}
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: "io.spring.dependency-management"
+apply plugin: 'com.google.protobuf'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+ 
+sourceCompatibility = 1.7
+version = '0.0.1'
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.github.KCulture.ZapAppraisal.ZapAppraisal'
+        attributes 'Implementation-Title': 'ZapAppraisal', 'Implementation-Version': version
+    }
+}
+
+
+bootRun {
+    addResources = true
+}
+
+sourceSets {
+  main {
+    proto {
+      // In addition to the default 'src/main/proto'
+      srcDir 'src/main/protobuf'
+      srcDir 'src/main/protocolbuffers'
+      // In addition to the default '**/*.proto' (use with caution).
+      // Using an extension other than 'proto' is NOT recommended,
+      // because when proto files are published along with class files, we can
+      // only tell the type of a file from its extension.
+      include '**/*.protodevel'
+    }
+    java {
+      srcDir 'src/main/java'
+    }
+  }
+  test {
+    proto {
+      // In addition to the default 'src/test/proto'
+      srcDir 'src/test/protocolbuffers'
+      srcDir 'src/main/protocolbuffers'
+    }
+  }
+}
+dependencyManagement {
+  imports {
+    mavenBom 'org.springframework.boot:spring-boot-starter-parent:$spring_version'
+  }
+}
+def grpcVersion = '1.5.0' // CURRENT_GRPC_VERSION
+dependencies {
+   compile("org.springframework.boot:spring-boot-starter-data-mongodb")
+    compile("org.springframework.boot:spring-boot-starter-data-rest")
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile  "org.freemarker:freemarker"
+    compile  "org.springframework.boot:spring-boot-starter-freemarker"
+    compile "com.google.api.grpc:proto-google-common-protos:0.1.9"
+    compile "io.grpc:grpc-netty:${grpcVersion}"
+    compile "io.grpc:grpc-protobuf:${grpcVersion}"
+    compile "io.grpc:grpc-stub:${grpcVersion}"
+    compile "io.netty:netty-tcnative-boringssl-static:2.0.5.Final"
+    runtime('org.springframework.boot:spring-boot-devtools')
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile('org.springframework:spring-test')
+    testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo"
+   
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.12'
+}
+test {
+    systemProperties 'property': 'value'
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.github.KCulture.ZapAppraisal.ZapAppraisal'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
